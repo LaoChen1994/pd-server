@@ -1,19 +1,23 @@
+import { IMiddleware } from 'koa-router';
+import BaseController from '../app/controller'
 export interface IRouteController {
     prefix?: string
     [key: string]: any
 }
 
 export interface IRequestMapping {
-    method: "GET" | "POST" | "PUT" | "DELETE" | "OPTION" | "PATCH";
+    method: "get" | "post" | "put" | "delete" | "options" | "patch";
     url: string;
+    name?: string;
+    handler?: IMiddleware
 }
 
 export interface IAppRoute extends IRequestMapping {
-    controller: IRouteController;
+    constructor: IRouteController;
     key: string
 }
 
-export const routers: IAppRoute[] = [];
+const routers: IAppRoute[] = [];
 
 export function Controller(path = "") {
     return function (target: any) {
@@ -27,10 +31,15 @@ export function RequestMapping(props: IRequestMapping) {
 
         if (typeof original === 'function') {
             routers.push({
-                controller: target,
+                constructor: target.constructor,
                 key: name,
+                handler: target[name],
                 ...props
             })
         }
     }
+}
+
+export function getRoutes() {
+    return routers
 }

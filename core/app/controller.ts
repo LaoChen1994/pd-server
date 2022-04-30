@@ -1,4 +1,4 @@
-import App from './base'
+import App from '../base'
 
 interface CProps {
     app: App

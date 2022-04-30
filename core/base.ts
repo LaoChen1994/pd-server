@@ -2,6 +2,7 @@ import Koa from "koa";
 import path from "path";
 import glob from "glob";
 import fs from "fs";
+import Application from "koa";
 
 interface IAppProps {
   basePath?: string;
@@ -82,8 +83,13 @@ export default class App {
     });
   }
 
-  async start() {
+  async start(...args: any) {
     await this.init();
+    const [port] = args
+    if (port) {
+      console.log("server is on", port)
+    }
+    this.app.listen(...args)
   }
 
   use() {}

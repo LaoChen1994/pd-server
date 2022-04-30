@@ -1,5 +1,7 @@
-import App from '../core/app/base';
+import App from '../core/base'
 
 new App({
   basePath: __dirname
-}).start()
+}).start(3000)
+
+console.log("app start")

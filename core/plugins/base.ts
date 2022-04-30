@@ -1,4 +1,4 @@
-import App from '../app/base'
+import type App from '../base'
 
 export interface IPluginBaseState {
     app: App

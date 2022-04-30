@@ -1,14 +1,14 @@
 import { BaseController, Controller, RequestMapping } from '../../core'
 
 @Controller("/test")
-export default class TestController extends BaseController {
+class TestController extends BaseController {
     constructor(props: any) {
         super(props)
     }
 
     @RequestMapping({
-        url: '/v2/test',
-        method: "GET"
+        url: '/v2',
+        method: "get"
     })
     async test2(ctx: any, next: any) {
         ctx.body = {
@@ -17,3 +17,5 @@ export default class TestController extends BaseController {
         }
     }
 }
+
+export default TestController

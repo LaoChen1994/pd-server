@@ -2,13 +2,14 @@
   "name": "pd-server",
   "version": "1.0.0",
   "description": "",
-  "main": "./dist/core/index.js",
+  "main": "./core/index.ts",
   "files": [
     "./dist/core"
   ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "pnpm exec nodemon ./example/app.ts"
+    "start": "pnpm exec nodemon ./example/app.ts",
+    "build": "tsc --build tsconfig.json"
   },
   "author": "chenyixiang",
   "license": "ISC",
