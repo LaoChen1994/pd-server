@@ -1,0 +1,45 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model GoodSpus {
+  id          Int        @id @default(autoincrement())
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  name        String     @db.VarChar(255)
+  description String?
+  status      Boolean    @default(false)
+  operatorId  Int
+  GoodSkus    GoodSkus[]
+  operator    User       @relation(fields: [operatorId], references: [id])
+}
+
+model GoodSkus {
+  id          Int      @id @default(autoincrement())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  name        String   @db.VarChar(255)
+  description String?
+  status      Boolean  @default(false)
+  operatorId  Int
+  operator    User     @relation(fields: [operatorId], references: [id])
+  spus        GoodSpus @relation(fields: [spuId], references: [id])
+  spuId       Int
+}
+
+model User {
+  id         Int        @id @default(autoincrement())
+  name       String     @db.VarChar(255)
+  department String     @db.VarChar(255)
+  age        Int        @default(18)
+  GoodSpus   GoodSpus[]
+  GoodSkus   GoodSkus[]
+}
