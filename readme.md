@@ -42,9 +42,25 @@ export default class TestController {
 
 ### 方法装饰器
 
-方法装饰器目前需要直接操作`descriptor.value`来对方法进行魔改，来加强对应修饰方法的功能，比如我们想为魔改的方法增加log的功能，我们可以这么做
+方法装饰器目前需要直接操作`descriptor.value`来对方法进行魔改，来加强对应修饰方法的功能，比如我们想为魔改的方法增加log的功能，我们可以这么做，比如我们现在想要去对请求增加cors的请求头，可以这么做
 
 ```typescript
+import { Middleware } from "koa";
+
+export function cors() {
+  return function (target: any, name: string, descriptor: any) {
+    const fn: Function = descriptor.value;
+
+    const cors: Middleware = async function (this: any, ...args) {
+      const ctx = args[0]
+      await fn.apply(this, args)
+      ctx.set("Access-Control-Allow-Origin", "*");
+      ctx.set("Access-Control-Allow-Headers", "*");
+      ctx.set("Access-Control-Methods", "*");
+    };
+    descriptor.value = cors
+  };
+}
 
 ```
 

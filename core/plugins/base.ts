@@ -4,8 +4,11 @@ export interface IPluginBaseState {
     app: App
 }
 
-export default abstract class PluginBase {
+export default class PluginBase {
+    app: IPluginBaseState['app']
     constructor(props: IPluginBaseState) {
+        const { app } = props
+        this.app = app;
     }
 
     load() {

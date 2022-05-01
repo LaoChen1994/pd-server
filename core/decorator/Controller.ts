@@ -19,13 +19,13 @@ export interface IAppRoute extends IRequestMapping {
 
 const routers: IAppRoute[] = [];
 
-export function Controller(path = "") {
+function Controller(path = "") {
     return function (target: any) {
         target.prefix = path
     }
 }
 
-export function RequestMapping(props: IRequestMapping) {
+function RequestMapping(props: IRequestMapping) {
     return function (target: any, name: string, descriptor: any) {
         const original = descriptor.value;
 
@@ -33,13 +33,19 @@ export function RequestMapping(props: IRequestMapping) {
             routers.push({
                 constructor: target.constructor,
                 key: name,
-                handler: target[name],
+                handler: descriptor.value,
                 ...props
             })
         }
     }
 }
 
-export function getRoutes() {
+function getRoutes() {
     return routers
+}
+
+export {
+    Controller,
+    RequestMapping,
+    getRoutes
 }

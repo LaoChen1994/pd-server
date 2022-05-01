@@ -5,18 +5,9 @@ import Router from "koa-router";
 
 import PluginBase, { IPluginBaseState } from "../base";
 import { getRoutes } from "../../decorator/Controller";
-
-interface IRouteProps {
-  basePath?: string;
-}
-
 export default class RouterPlugin extends PluginBase {
-  app: IPluginBaseState["app"];
-
   constructor(props: IPluginBaseState) {
     super(props);
-    const { app } = props;
-    this.app = app;
   }
 
   loadController() {
@@ -36,6 +27,7 @@ export default class RouterPlugin extends PluginBase {
                   const filePath = path.join(dir, controllerPath);
 
                   if (!fs.statSync(filePath).isDirectory()) {
+                    // @todo 这里需要判断是某个入口文件才行
                     const Controller = await require(filePath);
                     if (typeof Controller === "function") {
                       new Controller(app);
@@ -66,7 +58,6 @@ export default class RouterPlugin extends PluginBase {
         constructor,
         method,
         url,
-        key,
         handler = async (ctx, next) => {
           await next();
         },
@@ -76,7 +67,6 @@ export default class RouterPlugin extends PluginBase {
       const prefix = (constructor.prefix || "").replace(/\W+(\/+)$/gi, "");
       const suffix = url.startsWith("/") ? url : `/${url}`;
       const path = `${prefix}${suffix}`;
-      console.log(path)
 
       router[method](name, path, handler!);
     });
