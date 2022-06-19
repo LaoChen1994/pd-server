@@ -1,4 +1,4 @@
-import { BaseController, Controller, RequestMapping, cors } from '../../core'
+import { BaseController, Controller, RequestMapping, CORS } from '../../core'
 
 @Controller("/test")
 class TestController extends BaseController {
@@ -10,12 +10,9 @@ class TestController extends BaseController {
         url: '/v2',
         method: "get"
     })
-    @cors()
+    @CORS()
     async test2(ctx: any, next: any) {
-        ctx.body = {
-            code: 0,
-            message: "success"
-        }
+        ctx.success("success")
     }
 }
 

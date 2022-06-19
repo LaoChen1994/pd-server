@@ -1,6 +1,6 @@
 import { Middleware } from "koa";
 
-export function cors() {
+export function CORS() {
   return function (target: any, name: string, descriptor: any) {
     const fn: Function = descriptor.value;
 

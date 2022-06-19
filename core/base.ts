@@ -1,25 +1,26 @@
 import Koa from "koa";
 import path from "path";
-import glob from "glob";
+import glob, { IOptions } from "glob";
 import fs from "fs";
-import Application from "koa";
 
 interface IAppProps {
   basePath?: string;
 }
 
-interface IAppConfig {}
-
+const PLUGIN_PARTTEN = "plugins/**";
+const CONFIG_PARTTEN = "config/**";
 export default class App {
   app: Koa;
   path: string;
   basePath: string;
+  config: Record<string, any>;
   public protoPaths: string[] = [];
 
   constructor(props: IAppProps) {
     this.app = new Koa();
     this.path = props.basePath || path.resolve(".");
     this.basePath = __dirname;
+    this.config = {};
   }
 
   public get frameworkPaths() {
@@ -34,7 +35,7 @@ export default class App {
     return path;
   }
 
-  private _collectPath() {
+  #_collectPath() {
     if (this.protoPaths.length) {
       return this.protoPaths;
     }
@@ -42,55 +43,97 @@ export default class App {
     let proto = this;
     while (proto !== null) {
       if (proto?.frameworkPaths && proto?.frameworkPaths?.length) {
-        this.protoPaths.push(...proto.frameworkPaths);
+        this.protoPaths.unshift(...proto.frameworkPaths);
       }
       // @ts-ignore
       proto = proto.__proto__;
     }
   }
 
-  init() {
-    this._collectPath();
-    this.initPlugin();
+  async init() {
+    this.#_collectPath();
+    await this.#initConfig();
+    await this.#initPlugin();
   }
 
-  initPlugin() {
-    const app = this;
-
-    this.protoPaths.map((basePath) => {
-      // @todo 这里可以抽一个单独的方法出来做这个事情
-      glob(
-        "plugins/**",
-        {
-          cwd: basePath,
-        },
-        (err, matches) => {
-          if (!err) {
-            matches.forEach(async (item) => {
-              const filePath = path.resolve(basePath, item);
-              if (!fs.statSync(filePath).isDirectory()) {
-                const plugin = await require(filePath);
-
-                // @todo 这里后期可以通过配置ignore的方式来操作
-                if (!plugin.ignore) {
-                  new plugin.default({ app }).load();
-                }
-              }
-            });
-          }
+  async #initConfig() {
+    let i = this.protoPaths.length - 1;
+    while (i >= 0) {
+      const files = await this.#_globalFiles(CONFIG_PARTTEN, {
+        cwd: this.protoPaths[i],
+      });
+      for (let j = 0; j < files.length; j++) {
+        const realPath = path.resolve(this.protoPaths[i], files[j]);
+        const state = fs.statSync(realPath);
+        if (
+          !state.isDirectory() &&
+          [".ts", ".js"].includes(path.extname(realPath))
+        ) {
+          const config = require(realPath);
+          const filename = path.basename(realPath).split(".")[0];
+          this.config[filename] = config.default;
         }
+      }
+      i--;
+    }
+  }
+
+  async #initPlugin() {
+    const app = this;
+    const { plugin: pluginConfig = {} } = this.config;
+    try {
+      const matchCollection = await Promise.all(
+        this.protoPaths.map((basePath) =>
+          this.#_globalFiles(PLUGIN_PARTTEN, { cwd: basePath })
+        )
       );
+
+      await Promise.all(
+        matchCollection.reduce((p, matches, i) => {
+          matches.forEach(async (item) => {
+            const filePath = path.resolve(this.protoPaths[i], item);
+            let pluginName = path.basename(item).split(".")[0];
+
+            if (pluginName === "index") {
+              pluginName = path.dirname(item).split("/").at(-1)!;
+            }
+            if (!pluginConfig[pluginName] || !pluginConfig[pluginName].enabled)
+              return p;
+
+            if (!fs.statSync(filePath).isDirectory()) {
+              const { default: Plugin } = require(filePath);
+
+              p.push(new Plugin({ app }).load());
+            }
+          });
+
+          return p;
+        }, [] as any[])
+      );
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  #_globalFiles(partten: string, opt: IOptions) {
+    return new Promise<string[]>((res, rej) => {
+      glob(partten, opt, (err, matches) => {
+        if (err) {
+          rej(err);
+          return;
+        }
+
+        res(matches);
+      });
     });
   }
 
   async start(...args: any) {
     await this.init();
-    const [port] = args
+    const [port] = args;
     if (port) {
-      console.log("server is on", port)
+      console.log("server is on", port);
     }
-    this.app.listen(...args)
+    this.app.listen(...args);
   }
-
-  use() {}
 }

@@ -28,7 +28,6 @@ function Controller(path = "") {
 function RequestMapping(props: IRequestMapping) {
     return function (target: any, name: string, descriptor: any) {
         const original = descriptor.value;
-
         if (typeof original === 'function') {
             routers.push({
                 constructor: target.constructor,
