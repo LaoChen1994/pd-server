@@ -1,10 +1,10 @@
 import { Middleware } from "koa";
 
-export function Fail() {
+export function Catch() {
   return function (target: any, name: string, descriptor: any) {
     const fn: Function = descriptor.value;
 
-    const cors: Middleware = async function (this: any, ctx, next) {
+    const fail: Middleware = async function (this: any, ctx, next) {
         try {
             await fn.call(this, ctx, next)
         } catch (error) {
@@ -19,6 +19,6 @@ export function Fail() {
         }
     };
 
-    descriptor.value = cors
+    descriptor.value = fail
   };
 }

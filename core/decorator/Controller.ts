@@ -1,5 +1,4 @@
 import { IMiddleware } from 'koa-router';
-import BaseController from '../app/controller'
 export interface IRouteController {
     prefix?: string
     [key: string]: any
