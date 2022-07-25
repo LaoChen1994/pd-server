@@ -53,6 +53,7 @@ export default class RouterPlugin extends PluginBase {
   initRouter() {
     const routes = getRoutes();
     const router = new Router();
+    console.log(routes)
     routes.forEach((route) => {
       const {
         constructor,
@@ -67,6 +68,8 @@ export default class RouterPlugin extends PluginBase {
       const prefix = (constructor.prefix || "").replace(/\W+(\/+)$/gi, "");
       const suffix = url.startsWith("/") ? url : `/${url}`;
       const path = `${prefix}${suffix}`;
+
+      console.log(path)
 
       router[method](name, path, handler!);
     });

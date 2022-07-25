@@ -1,4 +1,4 @@
-import { BaseController, Controller, RequestMapping, CORS, Logger } from '../../core'
+import { BaseController, Controller, RequestMapping, CORS, Logger, getRoutes } from '../../core'
 
 @Controller("/test")
 class TestController extends BaseController {
@@ -14,6 +14,18 @@ class TestController extends BaseController {
     @CORS()
     async test2(ctx: any, next: any) {
         ctx.success("success")
+    }
+
+    @RequestMapping({
+        url: "/dataOutput",
+        method: "get"
+    })
+    @Logger()
+    async dataOutput(ctx: any, next: any) {
+        const { id } = ctx.query
+        ctx.success({
+            data: id
+        })
     }
 }
 
